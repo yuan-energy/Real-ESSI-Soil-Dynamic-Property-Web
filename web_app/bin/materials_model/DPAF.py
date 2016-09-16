@@ -26,7 +26,6 @@ class DPAF(object):
 		argv = []
 		argv.append(float(form.MaxPureShearStrain))
 		argv.append(float(form.Shear_Strain_Increment))
-		argv.append(float(form.Max_Num_Of_Subincrement))
 		argv.append(float(form.DruckerPrager_k0))
 		argv.append(float(form.armstrong_frederick_ha))
 		argv.append(float(form.armstrong_frederick_cr))
@@ -38,11 +37,9 @@ class DPAF(object):
 		argv.append(float(form.plastic_flow_kd))
 		argv.append(float(form.plastic_flow_xi))
 
-		# Setting the minimum step to be 1E-6
-		# strain_step = 1E-4
-		# Num_Of_Subincrement_monotonic_loading
-		Num_Of_Subincrement_monotonic_loading = argv[0] / argv[1]
-		argv[1] = Num_Of_Subincrement_monotonic_loading
+		strain_incre_ = float(form.Shear_Strain_Increment)
+		max_strain = float(form.MaxPureShearStrain)
+		Num_Of_Subincrement_monotonic_loading = int(argv[0] / argv[1])
         # Call the executable to run Gauss point
 		mylog.write("Start calculation! ")
 		arg = ' '.join([str(x) for x in argv])
@@ -84,7 +81,6 @@ class DPAF(object):
 			G_over_Gmax.append(G_Gmax)
 		mylog.write("information for Gmax: ")
 		mylog.write("size(G_over_Gmax)       = " + str(len(G_over_Gmax)))
-		mylog.write("size(Num_increase_step) = " + str(Num_increase_step))
 
 		plt.clf()
 		plt.plot(strain[0:Num_increase_step+1] , G_over_Gmax )
@@ -101,16 +97,18 @@ class DPAF(object):
 		# Figure 3
 		# Plot the damping ratio curves
 		# ============================================
-		max_strain = float(form.MaxPureShearStrain)
 		Nstep_ = 10
-		[start, end] = log10([1E-4, max_strain])
+		[start, end] = log10([strain_incre_, max_strain])
 		strain_step = logspace(start, end, Nstep_)
 		damping_ratio = []
-		argv_part = argv[1:] 
 		for x in xrange(0, Nstep_):
 			this_strain = strain_step[x] 
-			arg_part = ' '.join([str(x) for x in argv_part])
-			arg = str(this_strain) + ' '+ arg_part
+			mylog.write("\n this_strain) = " + str(this_strain)+ "\n" )
+			this_strain_incr = min(1E-5, this_strain/10)
+			argv[1] = this_strain_incr
+			argv[0] = this_strain
+			Num_increase_step =  int(this_strain / this_strain_incr)
+			arg = ' '.join([str(x) for x in argv])
 			command = "script -c './test_dpaf " + arg + " ' log" 
 			call(sh.split(command))
 			# read data
@@ -124,10 +122,9 @@ class DPAF(object):
 			loop_area = 0 
 			strain_step_len = strain[1] - strain[0]
 			min_y = min(stress)
-			Nstep_monotonic = int(float(Num_Of_Subincrement_monotonic_loading))
-			for x in xrange(Nstep_monotonic, 3*Nstep_monotonic):
+			for x in xrange(Num_increase_step, 3*Num_increase_step):
 				loop_area = loop_area - strain_step_len * (stress[x] - min_y)
-			for x in xrange(3*Nstep_monotonic, 5*Nstep_monotonic):
+			for x in xrange(3*Num_increase_step, 5*Num_increase_step):
 				loop_area = loop_area + strain_step_len * (stress[x] - min_y)
 			Wd = loop_area
 			# calc damping
@@ -149,4 +146,7 @@ class DPAF(object):
 
 		mylog.close()
 		test =1 
+
+		argv[0]  = (float(form.MaxPureShearStrain))
+		argv[1]  = (float(form.Shear_Strain_Increment))
 		return render.DPAF_refresh(argv)

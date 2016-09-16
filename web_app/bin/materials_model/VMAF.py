@@ -1,7 +1,7 @@
 import web
 from subprocess import call
 import shlex as sh
-from numpy import loadtxt, linspace, pi, insert
+from numpy import loadtxt, linspace, pi, insert, logspace, log10
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
@@ -25,8 +25,7 @@ class VMAF(object):
         
 		argv = []
 		argv.append(float(form.MaxPureShearStrain))
-		argv.append(float(form.Num_Of_Subincrement_monotonic_loading))
-		argv.append(float(form.Max_Num_Of_Subincrement))
+		argv.append(float(form.Shear_Strain_Increment))
 		argv.append(float(form.vonMises_radius))
 		argv.append(float(form.armstrong_frederick_ha))
 		argv.append(float(form.armstrong_frederick_cr))
@@ -35,6 +34,9 @@ class VMAF(object):
 		argv.append(float(form.poisson_ratio))
 		argv.append(float(form.mass_density))
 
+		strain_incre_ = float(form.Shear_Strain_Increment)
+		max_strain = float(form.MaxPureShearStrain)
+		Num_Of_Subincrement_monotonic_loading = int(argv[0] / argv[1])
         # Call the executable to run Gauss point
 		mylog.write("Start calculation! ")
 		arg = ' '.join([str(x) for x in argv])
@@ -53,6 +55,7 @@ class VMAF(object):
 		plt.plot(strain, stress)
 		plt.xlabel("strain (unitless) ")
 		plt.ylabel("stress (Pa)")
+		plt.grid()
 		plt.savefig("VMAF_strain_stress.png", bbox_inches='tight')
 
 		# ============================================
@@ -63,7 +66,7 @@ class VMAF(object):
 		nu_ = float(form.poisson_ratio)
 		Gmax = E_/2.0 / (1+nu_)
 		mylog.write("Gmax = " + str(Gmax))
-		Num_increase_step = int(float(form.Num_Of_Subincrement_monotonic_loading))
+		Num_increase_step = int(float(Num_Of_Subincrement_monotonic_loading))
 		G_over_Gmax = []
 		G_over_Gmax.append(1)
 		gamma = []
@@ -81,25 +84,29 @@ class VMAF(object):
 		plt.plot(strain[0:Num_increase_step+1] , G_over_Gmax )
 		plt.xlabel("strain (unitless) ")
 		plt.ylabel("G/Gmax (unitless)")
+		plt.xscale('log')
 		minY = 0
 		maxY = max(G_over_Gmax)*1.05
 		plt.ylim([minY, maxY])
-		plt.xscale('log')
+		plt.grid()
 		plt.savefig("VMAF_G_Gmax.png", bbox_inches='tight')
 
 		# ============================================
 		# Figure 3
 		# Plot the damping ratio curves
 		# ============================================
-		max_strain = float(form.MaxPureShearStrain)
 		Nstep_ = 10
-		strain_step = linspace(max_strain/Nstep_, max_strain, Nstep_)
+		[start, end] = log10([strain_incre_, max_strain])
+		strain_step = logspace(start, end, Nstep_)
 		damping_ratio = []
-		argv_part = argv[1:] 
 		for x in xrange(0, Nstep_):
 			this_strain = strain_step[x] 
-			arg_part = ' '.join([str(x) for x in argv_part])
-			arg = str(this_strain) + ' '+ arg_part
+			mylog.write("\n this_strain) = " + str(this_strain)+ "\n" )
+			this_strain_incr = min(1E-5, this_strain/10)
+			argv[1] = this_strain_incr
+			argv[0] = this_strain
+			Num_increase_step =  int(this_strain / this_strain_incr)
+			arg = ' '.join([str(x) for x in argv])
 			command = "script -c './test_vmaf " + arg + " ' log" 
 			call(sh.split(command))
 			# read data
@@ -113,10 +120,9 @@ class VMAF(object):
 			loop_area = 0 
 			strain_step_len = strain[1] - strain[0]
 			min_y = min(stress)
-			Nstep_monotonic = int(float(form.Num_Of_Subincrement_monotonic_loading))
-			for x in xrange(Nstep_monotonic, 3*Nstep_monotonic):
+			for x in xrange(Num_increase_step, 3*Num_increase_step):
 				loop_area = loop_area - strain_step_len * (stress[x] - min_y)
-			for x in xrange(3*Nstep_monotonic, 5*Nstep_monotonic):
+			for x in xrange(3*Num_increase_step, 5*Num_increase_step):
 				loop_area = loop_area + strain_step_len * (stress[x] - min_y)
 			Wd = loop_area
 			# calc damping
@@ -131,10 +137,14 @@ class VMAF(object):
 		plt.xlabel("strain (unitless) ")
 		plt.ylabel("Damping ratio (unitless)")
 		plt.xscale('log')
+		plt.grid()
 		plt.savefig("VMAF_damping_ratio.png", bbox_inches='tight')
 
 
 
 		mylog.close()
 		test =1 
+
+		argv[0]  = (float(form.MaxPureShearStrain))
+		argv[1]  = (float(form.Shear_Strain_Increment))
 		return render.VMAF_refresh(argv)

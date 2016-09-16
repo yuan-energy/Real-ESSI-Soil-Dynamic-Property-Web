@@ -19,5 +19,5 @@
 
 
 
-##### Enter the material [link](https://goo.gl/AcZomQ), change the Soil Parameters and Submit! 
+##### Click the material [link](https://goo.gl/AcZomQ), change the Soil Parameters and Submit! 
 ##### Have fun!
