@@ -21,3 +21,9 @@
 
 ##### Click the material [link](https://goo.gl/AcZomQ), change the Soil Parameters and Submit! 
 ##### Have fun!
+
+
+
+#### Notes
+
+This is the first version. If you find a bug, please email ofeng@ucdavis.edu. I will fix it as soon as possible. Thanks!
