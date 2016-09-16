@@ -1,0 +1,53 @@
+$def with (greeting)
+
+$if greeting:
+    <!-- I just wanted to say <em style="color: green; font-size: 2em;">$greeting</em>. -->
+$else:
+    <em>Hello</em>, world!
+<style>
+div {
+    display: table-cell;
+    vertical-align: middle;
+    height: 50px;
+    /*border: 1px solid red;*/
+}
+label, input {
+    vertical-align:middle;
+}
+</style>
+
+<h1>Material Model</h1>
+<h2>Drucker Prager Armstrong Frederick</h2>
+<h3>Change the Soil Parameters and Submit</h3>
+
+<form action="/DPAF" method="POST">
+    <!-- A Greeting: <input type="text" name="greet"><br/> -->
+    <!-- Your Name: <input type="text" name="name"><br/> -->
+    <div>    
+    	MaxPureShearStrain : <input type="text" name ="MaxPureShearStrain" value = "0.03    "><br/>
+    	Shear Strain Increment : <input type="text" name ="Shear_Strain_Increment" value = "1E-4    "><br/>
+    	Max_Num_Of_Subincrement : <input type="text" name ="Max_Num_Of_Subincrement" value = "1E5    "><br/>
+    	DruckerPrager_k0 : <input type="text" name ="DruckerPrager_k0" value = "1.2    "><br/>
+    	armstrong_frederick_ha : <input type="text" name ="armstrong_frederick_ha" value = "1E5    "><br/>
+    	armstrong_frederick_cr : <input type="text" name ="armstrong_frederick_cr" value = "900    "><br/>
+    	isotropic_hardening_rate : <input type="text" name ="isotropic_hardening_rate" value = "0.0    "><br/>
+    	elastic_modulus : <input type="text" name ="elastic_modulus" value = "1E7    "><br/>
+    	poisson_ratio : <input type="text" name ="poisson_ratio" value = "0.3    "><br/>
+    	mass_density : <input type="text" name ="mass_density" value = "2000    "><br/>
+    	initial_confine : <input type="text" name ="initial_confine" value = "1000    "><br/>
+    	plastic_flow_kd : <input type="text" name ="plastic_flow_kd" value = "0.0    "><br/>
+    	plastic_flow_xi : <input type="text" name ="plastic_flow_xi" value = "0.0    "><br/>
+	</div>
+    <input type="submit">
+
+<h2>Stress-Strain Curve</h2>
+<img border="0" src="http://cml01.engr.ucdavis.edu/yuan/Real-ESSI-Soil-Dynamic-Property/web_app/DPAF_strain_stress.png" alt="name" width="400" height="300" />
+
+<h2>G/Gmax Curve</h2>
+<img border="0" src="http://cml01.engr.ucdavis.edu/yuan/Real-ESSI-Soil-Dynamic-Property/web_app/DPAF_G_Gmax.png" alt="name" width="400" height="300" />
+
+<h2>Damping Ratio Curve</h2>
+<img border="0" src="http://cml01.engr.ucdavis.edu/yuan/Real-ESSI-Soil-Dynamic-Property/web_app/DPAF_damping_ratio.png" alt="name" width="400" height="300" />
+
+
+</form>
